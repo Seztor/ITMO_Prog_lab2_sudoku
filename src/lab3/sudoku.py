@@ -1,11 +1,7 @@
 import pathlib
 import typing as tp
-import copy
 from collections import deque
-from time import perf_counter
 import random
-
-#from src.lab3.ideal_sudoku_solver_from_net import solve
 
 T = tp.TypeVar("T")
 
@@ -132,26 +128,6 @@ def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -
     return set(str(i) for i in range(1,10) if str(i) not in set(get_row(grid, pos)) | set(get_col(grid, pos)) | set(get_block(grid, pos)))
 
 
-# def solve3(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
-#     # """ Как решать Судоку?
-#     # >>> grid = read_sudoku('puzzle1.txt')
-#     # >>> solve(grid)
-#     # [['5', '3', '4', '6', '7', '8', '9', '1', '2'], ['6', '7', '2', '1', '9', '5', '3', '4', '8'], ['1', '9', '8', '3', '4', '2', '5', '6', '7'], ['8', '5', '9', '7', '6', '1', '4', '2', '3'], ['4', '2', '6', '8', '5', '3', '7', '9', '1'], ['7', '1', '3', '9', '2', '4', '8', '5', '6'], ['9', '6', '1', '5', '3', '7', '2', '8', '4'], ['2', '8', '7', '4', '1', '9', '6', '3', '5'], ['3', '4', '5', '2', '8', '6', '1', '7', '9']]
-#     # """
-#     global solution
-#     y,x = find_empty_position(grid)
-#
-#     if not(y == -1 and x == -1):
-#         possible_values = find_possible_values(grid, (y,x))
-#         for i in possible_values:
-#             grid[y][x] = i
-#             solve3(grid)
-#             grid[y][x] = '.'
-#             #solve([[grid[j][k] if k != x else i for k in range(len(grid))] if j==y else grid[j][:] for j in range(len(grid))])
-#     else:
-#         solution = copy.deepcopy(grid)
-
-
 def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]] | bool:
     """ Как решать Судоку?
     >>> grid = read_sudoku('puzzle1.txt')
@@ -176,27 +152,6 @@ def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]] | b
     return False
 
 
-# def solve2(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]] | bool:
-#     """ Как решать Судоку?
-#     >>> grid = read_sudoku('puzzle1.txt')
-#     >>> solution = solve(grid)
-#     >>> solution
-#     [['5', '3', '4', '6', '7', '8', '9', '1', '2'], ['6', '7', '2', '1', '9', '5', '3', '4', '8'], ['1', '9', '8', '3', '4', '2', '5', '6', '7'], ['8', '5', '9', '7', '6', '1', '4', '2', '3'], ['4', '2', '6', '8', '5', '3', '7', '9', '1'], ['7', '1', '3', '9', '2', '4', '8', '5', '6'], ['9', '6', '1', '5', '3', '7', '2', '8', '4'], ['2', '8', '7', '4', '1', '9', '6', '3', '5'], ['3', '4', '5', '2', '8', '6', '1', '7', '9']]
-#     """
-#     queue = deque()
-#     queue.append(grid)
-#     while len(queue):
-#         grid_temp= queue.popleft()
-#         y,x = find_empty_position(grid_temp)
-#         if not(y == -1 and x == -1):
-#             possible_values = find_possible_values(grid_temp, (y,x))
-#             for i in possible_values:
-#                 queue.append([[i if k == x else grid_temp[j][k] for k in range(len(grid_temp))] if j==y else grid_temp[j][:] for j in range(len(grid_temp))])
-#         else:
-#             return grid_temp
-#     return False
-
-
 def check_solution(solution: tp.List[tp.List[str]]) -> bool:
     """ Если решение solution верно, то вернуть True, в противном случае False
     >>> grid = read_sudoku('puzzle1.txt')
@@ -214,24 +169,6 @@ def check_solution(solution: tp.List[tp.List[str]]) -> bool:
         if not (len(row_nums) == len(col_nums) == len(block_nums) == len(solution)):
             return False
     return True
-
-
-#import time
-#
-# st = time.perf_counter()
-# grid = read_sudoku('puzzle_false.txt')
-# sol = solve2(grid)
-# # print(check_solution(sol))
-# print(perf_counter()-st)
-# print(sol)
-#
-# st = time.perf_counter()
-# solution = [[]]
-# grid = read_sudoku('puzzle_false.txt')
-# solve3(grid)
-# # print(check_solution(solution))
-# print(perf_counter()-st)
-# print(solution)
 
 
 def transpon(grid: tp.List[tp.List[str]]) -> tp.List[tp.List[str]]:
@@ -357,15 +294,7 @@ def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
         gen_sudoku_grid[y][x] = '.'
 
     return gen_sudoku_grid
-#
-# sol = generate_sudoku(81)
 
-# for i in sol:
-#     print(*i, sep='')
-# sol2 = solve2(sol)
-# # print(sol2)
-# print(check_solution(sol2))
-# display(sol2)
 
 if __name__ == "__main__":
     for fname in ["puzzle1.txt", "puzzle2.txt", "puzzle3.txt"]:
