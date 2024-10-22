@@ -1,6 +1,11 @@
 import pathlib
 import typing as tp
+import copy
+from collections import deque
+from time import perf_counter
+import random
 
+#from src.lab3.ideal_sudoku_solver_from_net import solve
 
 T = tp.TypeVar("T")
 
@@ -85,13 +90,13 @@ def get_block(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[s
     return [grid[i][j] for i in range(i_block, i_block + 3) for j in range(j_block, j_block + 3) ]
 
 
-def find_empty_positions(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.Tuple[int, int]]:
+def find_empty_position(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.Tuple[int, int]]:
     """Найти первую свободную позицию в пазле
-    >>> find_empty_positions([['1', '2', '.'], ['4', '5', '6'], ['7', '8', '9']])
+    >>> find_empty_position([['1', '2', '.'], ['4', '5', '6'], ['7', '8', '9']])
     (0, 2)
-    >>> find_empty_positions([['1', '2', '3'], ['4', '.', '6'], ['7', '8', '9']])
+    >>> find_empty_position([['1', '2', '3'], ['4', '.', '6'], ['7', '8', '9']])
     (1, 1)
-    >>> find_empty_positions([['1', '2', '3'], ['4', '5', '6'], ['.', '8', '9']])
+    >>> find_empty_position([['1', '2', '3'], ['4', '5', '6'], ['.', '8', '9']])
     (2, 0)
     """
     n = len(grid)
@@ -102,6 +107,16 @@ def find_empty_positions(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.Tuple[in
                     return i, j
     return -1,-1
 
+
+def find_arr_empty_positions(grid: tp.List[tp.List[str]]) -> tp.List[tp.Tuple[int, int]]:
+    n = len(grid)
+    arr = []
+    for i in range(n):
+        for j in range(n):
+            if grid[i][j] == '.':
+                arr.append((i,j))
+    arr.append((-1,-1))
+    return arr
 
 
 def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.Set[str]:
@@ -117,33 +132,182 @@ def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -
     return set(str(i) for i in range(1,10) if str(i) not in set(get_row(grid, pos)) | set(get_col(grid, pos)) | set(get_block(grid, pos)))
 
 
-def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
+# def solve3(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
+#     # """ Как решать Судоку?
+#     # >>> grid = read_sudoku('puzzle1.txt')
+#     # >>> solve(grid)
+#     # [['5', '3', '4', '6', '7', '8', '9', '1', '2'], ['6', '7', '2', '1', '9', '5', '3', '4', '8'], ['1', '9', '8', '3', '4', '2', '5', '6', '7'], ['8', '5', '9', '7', '6', '1', '4', '2', '3'], ['4', '2', '6', '8', '5', '3', '7', '9', '1'], ['7', '1', '3', '9', '2', '4', '8', '5', '6'], ['9', '6', '1', '5', '3', '7', '2', '8', '4'], ['2', '8', '7', '4', '1', '9', '6', '3', '5'], ['3', '4', '5', '2', '8', '6', '1', '7', '9']]
+#     # """
+#     global solution
+#     y,x = find_empty_position(grid)
+#
+#     if not(y == -1 and x == -1):
+#         possible_values = find_possible_values(grid, (y,x))
+#         for i in possible_values:
+#             grid[y][x] = i
+#             solve3(grid)
+#             grid[y][x] = '.'
+#             #solve([[grid[j][k] if k != x else i for k in range(len(grid))] if j==y else grid[j][:] for j in range(len(grid))])
+#     else:
+#         solution = copy.deepcopy(grid)
+
+
+def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]] | bool:
     """ Как решать Судоку?
     >>> grid = read_sudoku('puzzle1.txt')
-    >>> solve(grid)
+    >>> solution = solve(grid)
+    >>> solution
     [['5', '3', '4', '6', '7', '8', '9', '1', '2'], ['6', '7', '2', '1', '9', '5', '3', '4', '8'], ['1', '9', '8', '3', '4', '2', '5', '6', '7'], ['8', '5', '9', '7', '6', '1', '4', '2', '3'], ['4', '2', '6', '8', '5', '3', '7', '9', '1'], ['7', '1', '3', '9', '2', '4', '8', '5', '6'], ['9', '6', '1', '5', '3', '7', '2', '8', '4'], ['2', '8', '7', '4', '1', '9', '6', '3', '5'], ['3', '4', '5', '2', '8', '6', '1', '7', '9']]
     """
-    y,x = find_empty_positions(grid)
+    queue = deque()
+    queue.append((grid, 0))
+    arr_empty_pos = find_arr_empty_positions(grid)
+    while len(queue):
+        grid_temp, ind_arr_empty_pos = queue.popleft()
 
-    if not(y == -1 and x == -1):
-        possible_values = find_possible_values(grid, (y,x))
-        for i in possible_values:
-            grid[y][x] = i
-            solve(grid)
-            #solve([[grid[j][k] if k != x else i for k in range(len(grid))] if j==y else grid[j][:] for j in range(len(grid))])
-            grid[y][x] = '.'
+        y,x = arr_empty_pos[ind_arr_empty_pos]
+        if not(y == -1 and x == -1):
+            possible_values = find_possible_values(grid_temp, (y,x))
+            for i in possible_values:
+                queue.append( ([[i if k == x else grid_temp[j][k] for k in range(len(grid_temp))] if j==y else grid_temp[j][:] for j in range(len(grid_temp))],
+                               ind_arr_empty_pos + 1) )
+        else:
+            return grid_temp
+    return False
 
-    else:
-        print(grid)
 
-
+# def solve2(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]] | bool:
+#     """ Как решать Судоку?
+#     >>> grid = read_sudoku('puzzle1.txt')
+#     >>> solution = solve(grid)
+#     >>> solution
+#     [['5', '3', '4', '6', '7', '8', '9', '1', '2'], ['6', '7', '2', '1', '9', '5', '3', '4', '8'], ['1', '9', '8', '3', '4', '2', '5', '6', '7'], ['8', '5', '9', '7', '6', '1', '4', '2', '3'], ['4', '2', '6', '8', '5', '3', '7', '9', '1'], ['7', '1', '3', '9', '2', '4', '8', '5', '6'], ['9', '6', '1', '5', '3', '7', '2', '8', '4'], ['2', '8', '7', '4', '1', '9', '6', '3', '5'], ['3', '4', '5', '2', '8', '6', '1', '7', '9']]
+#     """
+#     queue = deque()
+#     queue.append(grid)
+#     while len(queue):
+#         grid_temp= queue.popleft()
+#         y,x = find_empty_position(grid_temp)
+#         if not(y == -1 and x == -1):
+#             possible_values = find_possible_values(grid_temp, (y,x))
+#             for i in possible_values:
+#                 queue.append([[i if k == x else grid_temp[j][k] for k in range(len(grid_temp))] if j==y else grid_temp[j][:] for j in range(len(grid_temp))])
+#         else:
+#             return grid_temp
+#     return False
 
 
 def check_solution(solution: tp.List[tp.List[str]]) -> bool:
-    """ Если решение solution верно, то вернуть True, в противном случае False """
-    # TODO: Add doctests with bad puzzles
-    pass
+    """ Если решение solution верно, то вернуть True, в противном случае False
+    >>> grid = read_sudoku('puzzle1.txt')
+    >>> solution = solve(grid)
+    >>> check_solution(solution)
+    True
+    >>> grid = read_sudoku('puzzle_false.txt')
+    >>> check_solution(grid)
+    False
+    """
+    for i in range(len(solution)):
+        row_nums = set(get_row(solution, (i, 0)))
+        col_nums = set(get_col(solution, (0, i)))
+        block_nums = set(get_block(solution, (i//3*3, i%3*3)))
+        if not (len(row_nums) == len(col_nums) == len(block_nums) == len(solution)):
+            return False
+    return True
 
+
+#import time
+#
+# st = time.perf_counter()
+# grid = read_sudoku('puzzle_false.txt')
+# sol = solve2(grid)
+# # print(check_solution(sol))
+# print(perf_counter()-st)
+# print(sol)
+#
+# st = time.perf_counter()
+# solution = [[]]
+# grid = read_sudoku('puzzle_false.txt')
+# solve3(grid)
+# # print(check_solution(solution))
+# print(perf_counter()-st)
+# print(solution)
+
+
+def transpon(grid: tp.List[tp.List[str]]) -> tp.List[tp.List[str]]:
+    grid_temp = [['.']*len(grid) for _ in range(len(grid))]
+    for i in range(len(grid)):
+        for j in range(len(grid)):
+            grid_temp[i][j] = grid[j][i]
+    return grid_temp
+
+
+def swap_row(grid: tp.List[tp.List[str]], n_row_1, n_row_2) -> tp.List[tp.List[str]]:
+    grid_temp = []
+    for i in range(len(grid)):
+        if i == n_row_2:
+            grid_temp.append(grid[n_row_1][:])
+        elif i == n_row_1:
+            grid_temp.append(grid[n_row_2][:])
+        else:
+            grid_temp.append(grid[i][:])
+    return grid_temp
+
+
+def swap_col(grid: tp.List[tp.List[str]], n_col_1, n_col_2) -> tp.List[tp.List[str]]:
+    grid_temp = []
+    for i in range(len(grid)):
+        arr_temp = grid[i][:]
+        arr_temp[n_col_1], arr_temp[n_col_2] = arr_temp[n_col_2], arr_temp[n_col_1]
+        grid_temp.append(arr_temp)
+    return grid_temp
+
+
+def swap_cols_area(grid: tp.List[tp.List[str]], n_col_area_1, n_col_area_2) -> tp.List[tp.List[str]]:
+    grid_temp = []
+    for i in range(len(grid)):
+        arr_temp = grid[i][:]
+        (arr_temp[n_col_area_1*3], arr_temp[n_col_area_1*3+1], arr_temp[n_col_area_1*3+2],
+         arr_temp[n_col_area_2*3], arr_temp[n_col_area_2*3+1], arr_temp[n_col_area_2*3+2]) \
+        =\
+        (arr_temp[n_col_area_2*3], arr_temp[n_col_area_2*3+1], arr_temp[n_col_area_2*3+2],
+         arr_temp[n_col_area_1*3], arr_temp[n_col_area_1*3+1], arr_temp[n_col_area_1*3+2])
+        grid_temp.append(arr_temp)
+    return grid_temp
+
+
+def swap_rows_area(grid: tp.List[tp.List[str]], n_row_area_1, n_row_area_2) -> tp.List[tp.List[str]]:
+    grid_temp = []
+    for i in range(0, len(grid), 3):
+        if i // 3 == n_row_area_1:
+            grid_temp.append(grid[n_row_area_2 * 3][:])
+            grid_temp.append(grid[n_row_area_2 * 3 + 1][:])
+            grid_temp.append(grid[n_row_area_2 * 3 + 2][:])
+        elif i // 3 == n_row_area_2:
+            grid_temp.append(grid[n_row_area_1 * 3][:])
+            grid_temp.append(grid[n_row_area_1 * 3 + 1][:])
+            grid_temp.append(grid[n_row_area_1 * 3 + 2][:])
+        else:
+            grid_temp.append(grid[i][:])
+            grid_temp.append(grid[i + 1][:])
+            grid_temp.append(grid[i + 2][:])
+    return grid_temp
+
+
+def two_random_nums(fr: int,to: int) -> tp.Tuple[int,int]:
+    num_1 = random.randint(fr, to)
+    num_2 = random.randint(fr, to)
+    while num_1 == num_2:
+        num_2 = random.randint(fr, to)
+    return num_1, num_2
+
+
+def two_random_nums_row_or_col(num_row_or_col: int) -> tp.Tuple[int,int]:
+    num_1 = random.randint(num_row_or_col*3, num_row_or_col*3+2)
+    num_2 = random.randint(num_row_or_col*3, num_row_or_col*3+2)
+    while num_1 == num_2:
+        num_2 = random.randint(num_row_or_col*3, num_row_or_col*3+2)
+    return num_1, num_2
 
 def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
     """Генерация судоку заполненного на N элементов
@@ -162,19 +326,53 @@ def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
     >>> grid = generate_sudoku(0)
     >>> sum(1 for row in grid for e in row if e == '.')
     81
-    >>> solution = solve(grid)
-    >>> check_solution(solution)
-    True
     """
-    pass
+    grid_to_gen = [['.']*9 for i in range(9)]
+    arr_pos_to_gen = [(i,j) for i in range(9) for j in range(9)]
+    random.shuffle(arr_pos_to_gen)
 
+    gen_sudoku_grid = create_grid('123456789 456789123 789123456'
+                         '234567891 567891234 891234567'
+                         '345678912 678912345 912345678')
+    for i in range(100):
+        op_num = random.randint(0,4)
+        if op_num == 0:
+            gen_sudoku_grid = transpon(gen_sudoku_grid)
+            #print(gen_sudoku_grid)
+        elif op_num == 1:
+            num_row_1, num_row_2 = two_random_nums_row_or_col(random.randint(0, 2))
+            gen_sudoku_grid = swap_row(gen_sudoku_grid, num_row_1, num_row_2)
+        elif op_num == 2:
+            num_col_1, num_col_2 = two_random_nums_row_or_col(random.randint(0, 2))
+            gen_sudoku_grid = swap_col(gen_sudoku_grid, num_col_1, num_col_2)
+        elif op_num == 3:
+            num_row_area_1, num_row_area_2 = two_random_nums(0, 2)
+            gen_sudoku_grid = swap_rows_area(gen_sudoku_grid, num_row_area_1, num_row_area_2)
+        elif op_num == 4:
+            num_col_area_1, num_col_area_2 = two_random_nums(0, 2)
+            gen_sudoku_grid = swap_cols_area(gen_sudoku_grid, num_col_area_1, num_col_area_2)
 
-# if __name__ == "__main__":
-#     for fname in ["puzzle1.txt", "puzzle2.txt", "puzzle3.txt"]:
-#         grid = read_sudoku(fname)
-#         display(grid)
-#         solution = solve(grid)
-#         if not solution:
-#             print(f"Puzzle {fname} can't be solved")
-#         else:
-#             display(solution)
+    for i in range(81-N):
+        y, x = arr_pos_to_gen[i]
+        gen_sudoku_grid[y][x] = '.'
+
+    return gen_sudoku_grid
+#
+# sol = generate_sudoku(81)
+
+# for i in sol:
+#     print(*i, sep='')
+# sol2 = solve2(sol)
+# # print(sol2)
+# print(check_solution(sol2))
+# display(sol2)
+
+if __name__ == "__main__":
+    for fname in ["puzzle1.txt", "puzzle2.txt", "puzzle3.txt"]:
+        grid = read_sudoku(fname)
+        display(grid)
+        solution = solve(grid)
+        if not solution:
+            print(f"Puzzle {fname} can't be solved")
+        else:
+            display(solution)
