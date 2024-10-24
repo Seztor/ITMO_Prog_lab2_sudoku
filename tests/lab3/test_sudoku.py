@@ -35,7 +35,7 @@ class SudokuTestCase(unittest.TestCase):
         self.assertEqual(sud.get_col(test2, pos2), ['2', '.', '8'])
 
     def test_get_block(self):
-        test1 = sud.read_sudoku('../../src/lab3/puzzle1.txt')
+        test1 = sud.read_sudoku('src/lab3/puzzle1.txt')
         pos1 = (1, 2)
         pos2 = (7, 7)
         self.assertEqual(sud.get_block(test1, pos1), ['5', '3', '.', '6', '.', '.', '.', '9', '8'])
@@ -48,20 +48,20 @@ class SudokuTestCase(unittest.TestCase):
         self.assertEqual(sud.find_empty_position(test2), (2, 0))
 
     def test_possible_values(self):
-        test1 = sud.read_sudoku('../../src/lab3/puzzle1.txt')
+        test1 = sud.read_sudoku('src/lab3/puzzle1.txt')
         pos1 = (0,2)
         self.assertEqual(sud.find_possible_values(test1, pos1), {'1', '2', '4'})
         pos2 = (4,7)
         self.assertEqual(sud.find_possible_values(test1, pos2), {'2', '5', '9'})
 
     def test_solve(self):
-        test1 = sud.read_sudoku('../../src/lab3/puzzle1.txt')
+        test1 = sud.read_sudoku('src/lab3/puzzle1.txt')
         self.assertEqual(sud.solve(test1), [['5', '3', '4', '6', '7', '8', '9', '1', '2'], ['6', '7', '2', '1', '9', '5', '3', '4', '8'], ['1', '9', '8', '3', '4', '2', '5', '6', '7'], ['8', '5', '9', '7', '6', '1', '4', '2', '3'], ['4', '2', '6', '8', '5', '3', '7', '9', '1'], ['7', '1', '3', '9', '2', '4', '8', '5', '6'], ['9', '6', '1', '5', '3', '7', '2', '8', '4'], ['2', '8', '7', '4', '1', '9', '6', '3', '5'], ['3', '4', '5', '2', '8', '6', '1', '7', '9']])
 
-    def test_check_solution9(self):
-        test1 = sud.solve(sud.read_sudoku('../../src/lab3/puzzle1.txt'))
+    def test_check_solution(self):
+        test1 = sud.solve(sud.read_sudoku('src/lab3/puzzle1.txt'))
         self.assertEqual(sud.check_solution(test1), True)
-        test2 = sud.read_sudoku('../../src/lab3/puzzle_false.txt')
+        test2 = sud.read_sudoku('src/lab3/puzzle1.txt')
         self.assertEqual(sud.check_solution(test2), False)
 
 
