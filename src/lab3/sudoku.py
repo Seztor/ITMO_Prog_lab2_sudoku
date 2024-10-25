@@ -1,6 +1,5 @@
 import pathlib
 import typing as tp
-from collections import deque
 import random
 import copy
 
@@ -129,29 +128,6 @@ def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -
     return set(str(i) for i in range(1,10) if str(i) not in set(get_row(grid, pos)) | set(get_col(grid, pos)) | set(get_block(grid, pos)))
 
 
-# def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]] | bool:
-#     """ Как решать Судоку?
-#     >>> grid = read_sudoku('puzzle1.txt')
-#     >>> solution = solve(grid)
-#     >>> solution
-#     [['5', '3', '4', '6', '7', '8', '9', '1', '2'], ['6', '7', '2', '1', '9', '5', '3', '4', '8'], ['1', '9', '8', '3', '4', '2', '5', '6', '7'], ['8', '5', '9', '7', '6', '1', '4', '2', '3'], ['4', '2', '6', '8', '5', '3', '7', '9', '1'], ['7', '1', '3', '9', '2', '4', '8', '5', '6'], ['9', '6', '1', '5', '3', '7', '2', '8', '4'], ['2', '8', '7', '4', '1', '9', '6', '3', '5'], ['3', '4', '5', '2', '8', '6', '1', '7', '9']]
-#     """
-#     queue = deque()
-#     queue.append((grid, 0))
-#     arr_empty_pos = find_arr_empty_positions(grid)
-#     while len(queue):
-#         grid_temp, ind_arr_empty_pos = queue.popleft()
-#
-#         y,x = arr_empty_pos[ind_arr_empty_pos]
-#         if not(y == -1 and x == -1):
-#             possible_values = find_possible_values(grid_temp, (y,x))
-#             for i in possible_values:
-#                 queue.append( ([[i if k == x else grid_temp[j][k] for k in range(len(grid_temp))] if j==y else grid_temp[j][:] for j in range(len(grid_temp))],
-#                                ind_arr_empty_pos + 1) )
-#         else:
-#             return grid_temp
-#     return False
-
 def solve_recursion(grid: tp.List[tp.List[str]], ind_arr_pos: int):
     global solution_grid_global, arr_empty_positions, solution_found
     if solution_found:
@@ -175,8 +151,6 @@ def solve_recursion(grid: tp.List[tp.List[str]], ind_arr_pos: int):
         solution_found = True
 
 
-
-
 def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
     """ Как решать Судоку?
         >>> grid = read_sudoku('puzzle1.txt')
@@ -191,10 +165,6 @@ def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
     return solution_grid_global
 
 
-
-
-
-
 def check_solution(solution: tp.List[tp.List[str]]) -> bool:
     """ Если решение solution верно, то вернуть True, в противном случае False
     >>> grid = read_sudoku('puzzle1.txt')
@@ -205,6 +175,8 @@ def check_solution(solution: tp.List[tp.List[str]]) -> bool:
     >>> check_solution(grid)
     False
     """
+    if not solution:
+        return False
     for i in range(len(solution)):
         row_nums = set(get_row(solution, (i, 0)))
         col_nums = set(get_col(solution, (0, i)))
