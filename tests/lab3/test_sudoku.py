@@ -1,5 +1,6 @@
 import unittest
 import src.lab3.sudoku as sud
+from src.lab3.sudoku import display
 
 
 class SudokuTestCase(unittest.TestCase):
