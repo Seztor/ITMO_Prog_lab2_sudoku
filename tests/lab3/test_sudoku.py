@@ -1,6 +1,6 @@
 import unittest
 import src.lab3.sudoku as sud
-from src.lab3.sudoku import display
+
 
 
 class SudokuTestCase(unittest.TestCase):
@@ -44,9 +44,9 @@ class SudokuTestCase(unittest.TestCase):
 
     def test_find_empty_position(self):
         test1 = [['1', '2', '.'], ['4', '5', '6'], ['7', '8', '9']]
-        self.assertEqual(sud.find_empty_position(test1), (0,2))
+        self.assertEqual(sud.find_empty_positions(test1), (0, 2))
         test2 = [['1', '2', '3'], ['4', '5', '6'], ['.', '8', '9']]
-        self.assertEqual(sud.find_empty_position(test2), (2, 0))
+        self.assertEqual(sud.find_empty_positions(test2), (2, 0))
 
     def test_possible_values(self):
         test1 = sud.read_sudoku('src/lab3/puzzle1.txt')

@@ -87,13 +87,13 @@ def get_block(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[s
     return [grid[i][j] for i in range(i_block, i_block + 3) for j in range(j_block, j_block + 3) ]
 
 
-def find_empty_position(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.Tuple[int, int]]:
+def find_empty_positions(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.Tuple[int, int]]:
     """Найти первую свободную позицию в пазле
-    >>> find_empty_position([['1', '2', '.'], ['4', '5', '6'], ['7', '8', '9']])
+    >>> find_empty_positions([['1', '2', '.'], ['4', '5', '6'], ['7', '8', '9']])
     (0, 2)
-    >>> find_empty_position([['1', '2', '3'], ['4', '.', '6'], ['7', '8', '9']])
+    >>> find_empty_positions([['1', '2', '3'], ['4', '.', '6'], ['7', '8', '9']])
     (1, 1)
-    >>> find_empty_position([['1', '2', '3'], ['4', '5', '6'], ['.', '8', '9']])
+    >>> find_empty_positions([['1', '2', '3'], ['4', '5', '6'], ['.', '8', '9']])
     (2, 0)
     """
     n = len(grid)
@@ -108,10 +108,10 @@ def find_empty_position(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.Tuple[int
 def find_arr_empty_positions(grid: tp.List[tp.List[str]]) -> tp.List[tp.Tuple[int, int]]:
     n = len(grid)
     arr = []
-    for i in range(n):
-        for j in range(n):
-            if grid[i][j] == '.':
-                arr.append((i,j))
+    for i in range(3):
+        for j in range(3):
+            temp_arr = get_block(grid, (i*3,j*3))
+            arr.extend([(i*3+g//3,j*3+g%3) for g in range(9) if temp_arr[g] == '.'])
     arr.append((-1,-1))
     return arr
 
@@ -128,7 +128,7 @@ def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -
     """
     return set(str(i) for i in range(1,10) if str(i) not in set(get_row(grid, pos)) | set(get_col(grid, pos)) | set(get_block(grid, pos)))
 
-#
+
 # def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]] | bool:
 #     """ Как решать Судоку?
 #     >>> grid = read_sudoku('puzzle1.txt')
@@ -152,19 +152,30 @@ def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -
 #             return grid_temp
 #     return False
 
-def solve_recursion(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
-    global solution
-    y,x = find_empty_position(grid)
-
+def solve_recursion(grid: tp.List[tp.List[str]], ind_arr_pos: int):
+    global solution_grid_global, arr_empty_positions, solution_found
+    if solution_found:
+        return
+    y, x = arr_empty_positions[ind_arr_pos]
     if not(y == -1 and x == -1):
-        possible_values = find_possible_values(grid, (y,x))
+        possible_values = sorted(find_possible_values(grid, (y,x)))
+        if not possible_values:
+            return
+        max_from_block = max(get_block(grid, (y,x)))
+        max_from_block = '0' if max_from_block == '.' else max_from_block
+        possible_values = [i for i in possible_values if i > max_from_block] + [i for i in possible_values if i <= max_from_block]
         for i in possible_values:
             grid[y][x] = i
-            solve_recursion(grid)
+            solve_recursion(grid, ind_arr_pos+1)
             grid[y][x] = '.'
             #solve([[grid[j][k] if k != x else i for k in range(len(grid))] if j==y else grid[j][:] for j in range(len(grid))])
+
     else:
-        solution = copy.deepcopy(grid)
+        solution_grid_global = copy.deepcopy(grid)
+        solution_found = True
+
+
+
 
 def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
     """ Как решать Судоку?
@@ -172,10 +183,15 @@ def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
         >>> solve(grid)
         [['5', '3', '4', '6', '7', '8', '9', '1', '2'], ['6', '7', '2', '1', '9', '5', '3', '4', '8'], ['1', '9', '8', '3', '4', '2', '5', '6', '7'], ['8', '5', '9', '7', '6', '1', '4', '2', '3'], ['4', '2', '6', '8', '5', '3', '7', '9', '1'], ['7', '1', '3', '9', '2', '4', '8', '5', '6'], ['9', '6', '1', '5', '3', '7', '2', '8', '4'], ['2', '8', '7', '4', '1', '9', '6', '3', '5'], ['3', '4', '5', '2', '8', '6', '1', '7', '9']]
     """
-    global solution
-    solution = [[]]
-    solve_recursion(grid)
-    return solution
+    global solution_grid_global, arr_empty_positions, solution_found
+    arr_empty_positions = find_arr_empty_positions(grid)
+    solution_grid_global = []
+    solution_found = False
+    solve_recursion(grid, 0)
+    return solution_grid_global
+
+
+
 
 
 
@@ -193,6 +209,8 @@ def check_solution(solution: tp.List[tp.List[str]]) -> bool:
         row_nums = set(get_row(solution, (i, 0)))
         col_nums = set(get_col(solution, (0, i)))
         block_nums = set(get_block(solution, (i//3*3, i%3*3)))
+        if '.' in row_nums:
+            return False
         if not (len(row_nums) == len(col_nums) == len(block_nums) == len(solution)):
             return False
     return True
@@ -290,6 +308,9 @@ def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
     >>> grid = generate_sudoku(0)
     >>> sum(1 for row in grid for e in row if e == '.')
     81
+    >>> solution = solve(grid)
+    >>> check_solution(solution)
+    True
     """
     grid_to_gen = [['.']*9 for i in range(9)]
     arr_pos_to_gen = [(i,j) for i in range(9) for j in range(9)]
@@ -324,7 +345,7 @@ def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
 
 
 if __name__ == "__main__":
-    for fname in ["puzzle1.txt", "puzzle2.txt", "puzzle3.txt"]:
+    for fname in ["puzzle1.txt", "puzzle2.txt", "puzzle3.txt","puzzle_full_clear.txt", "puzzle_false.txt"]:
         grid = read_sudoku(fname)
         display(grid)
         solution = solve(grid)
@@ -332,3 +353,5 @@ if __name__ == "__main__":
             print(f"Puzzle {fname} can't be solved")
         else:
             display(solution)
+        print('#-#-#-#-#-#-#-#-#-#')
+        print()
