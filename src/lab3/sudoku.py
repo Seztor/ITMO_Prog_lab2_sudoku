@@ -129,6 +129,7 @@ def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -
 
 
 def solve_recursion(grid: tp.List[tp.List[str]], ind_arr_pos: int):
+    '''Рекурсивная функция решения судоку'''
     global solution_grid_global, arr_empty_positions, solution_found
     if solution_found:
         return
@@ -144,7 +145,6 @@ def solve_recursion(grid: tp.List[tp.List[str]], ind_arr_pos: int):
             grid[y][x] = i
             solve_recursion(grid, ind_arr_pos+1)
             grid[y][x] = '.'
-            #solve([[grid[j][k] if k != x else i for k in range(len(grid))] if j==y else grid[j][:] for j in range(len(grid))])
 
     else:
         solution_grid_global = copy.deepcopy(grid)
@@ -187,14 +187,13 @@ def check_solution(solution: tp.List[tp.List[str]]) -> bool:
             return False
     return True
 
-
 def transpon(grid: tp.List[tp.List[str]]) -> tp.List[tp.List[str]]:
+    '''Транспонирование матрицы'''
     grid_temp = [['.']*len(grid) for _ in range(len(grid))]
     for i in range(len(grid)):
         for j in range(len(grid)):
             grid_temp[i][j] = grid[j][i]
     return grid_temp
-
 
 def swap_row(grid: tp.List[tp.List[str]], n_row_1, n_row_2) -> tp.List[tp.List[str]]:
     grid_temp = []
@@ -207,7 +206,6 @@ def swap_row(grid: tp.List[tp.List[str]], n_row_1, n_row_2) -> tp.List[tp.List[s
             grid_temp.append(grid[i][:])
     return grid_temp
 
-
 def swap_col(grid: tp.List[tp.List[str]], n_col_1, n_col_2) -> tp.List[tp.List[str]]:
     grid_temp = []
     for i in range(len(grid)):
@@ -215,7 +213,6 @@ def swap_col(grid: tp.List[tp.List[str]], n_col_1, n_col_2) -> tp.List[tp.List[s
         arr_temp[n_col_1], arr_temp[n_col_2] = arr_temp[n_col_2], arr_temp[n_col_1]
         grid_temp.append(arr_temp)
     return grid_temp
-
 
 def swap_cols_area(grid: tp.List[tp.List[str]], n_col_area_1, n_col_area_2) -> tp.List[tp.List[str]]:
     grid_temp = []
@@ -228,7 +225,6 @@ def swap_cols_area(grid: tp.List[tp.List[str]], n_col_area_1, n_col_area_2) -> t
          arr_temp[n_col_area_1*3], arr_temp[n_col_area_1*3+1], arr_temp[n_col_area_1*3+2])
         grid_temp.append(arr_temp)
     return grid_temp
-
 
 def swap_rows_area(grid: tp.List[tp.List[str]], n_row_area_1, n_row_area_2) -> tp.List[tp.List[str]]:
     grid_temp = []
@@ -247,14 +243,12 @@ def swap_rows_area(grid: tp.List[tp.List[str]], n_row_area_1, n_row_area_2) -> t
             grid_temp.append(grid[i + 2][:])
     return grid_temp
 
-
 def two_random_nums(fr: int,to: int) -> tp.Tuple[int,int]:
     num_1 = random.randint(fr, to)
     num_2 = random.randint(fr, to)
     while num_1 == num_2:
         num_2 = random.randint(fr, to)
     return num_1, num_2
-
 
 def two_random_nums_row_or_col(num_row_or_col: int) -> tp.Tuple[int,int]:
     num_1 = random.randint(num_row_or_col*3, num_row_or_col*3+2)
@@ -284,7 +278,6 @@ def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
     >>> check_solution(solution)
     True
     """
-    grid_to_gen = [['.']*9 for i in range(9)]
     arr_pos_to_gen = [(i,j) for i in range(9) for j in range(9)]
     random.shuffle(arr_pos_to_gen)
 
